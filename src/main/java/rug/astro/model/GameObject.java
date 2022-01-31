@@ -65,8 +65,22 @@ public abstract class GameObject {
      * uniform even when performance may suffer.
      */
     public void nextStep() {
-        this.location.x = (AstroFrame.WINDOW_SIZE.width + this.location.x + this.velocity.x) % AstroFrame.WINDOW_SIZE.width;
-        this.location.y = (AstroFrame.WINDOW_SIZE.height + this.location.y + this.velocity.y) % AstroFrame.WINDOW_SIZE.height;
+        this.location.x = this.location.x + this.velocity.x;
+        this.location.y = this.location.y + this.velocity.y;
+        if (this.location.x < 0) {
+            this.location.x = 0;
+            this.velocity.x = 0;
+        } else if (this.location.x > Game.SPACESIZE) {
+            this.location.x = Game.SPACESIZE;
+            this.velocity.x = 0;
+        }
+        if (this.location.y < 0) {
+            this.location.y = 0;
+            this.velocity.y = 0;
+        } else if (this.location.y > Game.SPACESIZE) {
+            this.location.y = Game.SPACESIZE;
+            this.velocity.y = 0;
+        }
         if (this.stepsUntilCollisionPossible > 0) {
             this.stepsUntilCollisionPossible--;
         }

@@ -2,9 +2,11 @@ package rug.astro.view.view_models;
 
 import rug.astro.model.Spaceship;
 import rug.astro.util.PolarCoordinate;
+import rug.astro.view.AstroFrame;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 
 import static java.lang.Math.PI;
 
@@ -26,6 +28,7 @@ public class SpaceshipViewModel extends GameObjectViewModel<Spaceship> {
      */
     @Override
     public void draw(Graphics2D graphics2D, Point.Double location) {
+        location = new Point2D.Double(AstroFrame.WINDOW_SIZE.width/2.0, AstroFrame.WINDOW_SIZE.height/2.0);
         Spaceship spaceship = this.getGameObject();
         this.drawMainBody(spaceship, graphics2D, location);
         if (spaceship.isAccelerating()) {

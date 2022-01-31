@@ -1,11 +1,14 @@
 package rug.astro.view;
 
+import javafx.geometry.Point3D;
 import rug.astro.game_observer.GameUpdateListener;
 import rug.astro.model.Game;
 import rug.astro.view.view_models.SpaceshipViewModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Path2D;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AstroPanel extends JPanel implements GameUpdateListener {
     /**
@@ -54,8 +57,142 @@ public class AstroPanel extends JPanel implements GameUpdateListener {
         Font f = new Font("big", Font.CENTER_BASELINE, 15);
         graphics2D.setColor(Color.WHITE);
         graphics2D.setFont(f);
+        this.drawStars(graphics2D);
         this.drawGameObjects(graphics2D);
         this.drawDead(graphics2D);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        this.drawBorderX(graphics2D);
+        this.drawBorderY(graphics2D);
+        this.drawMinimap(graphics2D);
+        //graphics2D.setColor(Color.WHITE);
+        //graphics.drawRect((int)x-100, (int)y-100, 200, 200);
+    }
+
+    public void drawBorderX(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        int x1 = 0;
+        int x2 = 800;
+        int y1 = 0;
+        int y2 = 800;
+        boolean draw = false;
+        if (x-400 < 0) {
+            x1 = (int) (400-x);
+            x2 = (int) (400-x);
+            draw = true;
+        } else if (x+400 > Game.SPACESIZE) {
+            x1 = (int) (Game.SPACESIZE-x+400);
+            x2 = (int) (Game.SPACESIZE-x+400);
+            draw = true;
+        }
+        if (y-400 < 0) {
+            y1 = (int) (400-y);
+            y2 = game.SPACESIZE;
+        } else if (y+400 > game.SPACESIZE) {
+            y1 = 0;
+            y2 = (int) (Game.SPACESIZE-y+400);
+        }
+
+        if (draw) {
+            g.drawLine(x1, y1, x2, y2);
+        }
+    }
+
+    public void drawBorderY(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        int x1 = 0;
+        int x2 = 800;
+        int y1 = 0;
+        int y2 = 800;
+        boolean draw = false;
+        if (x-400 < 0) {
+            x1 = (int) (400-x);
+            x2 = 800;
+        } else if (x+400 > Game.SPACESIZE) {
+            x1 = 0;
+            x2 = (int) (Game.SPACESIZE-x+400);
+        }
+        if (y-400 < 0) {
+            y1 = (int) (400-y);
+            y2 = (int) (400-y);
+            draw = true;
+        } else if (y+400 > Game.SPACESIZE) {
+            y1 = (int) (Game.SPACESIZE-y+400);
+            y2 = (int) (Game.SPACESIZE-y+400);
+            draw = true;
+        }
+
+        if (draw) {
+            g.drawLine(x1, y1, x2, y2);
+        }
+    }
+
+    public void drawMinimap(Graphics2D g) {
+        g.setColor(Color.BLACK);
+        g.fillRect(650, 50, 101, 101);
+        g.setColor(Color.WHITE);
+        g.drawRect(650, 50, 101, 101);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        double xmini = x/Game.SPACESIZE*100;
+        double ymini = y/Game.SPACESIZE*100;
+        g.setColor(Color.GREEN);
+        g.fillRect((int)xmini+650,(int)ymini+50,2,2);
+    }
+
+
+    public void drawStars(Graphics2D g) {
+        g.setColor(Color.YELLOW);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        if (game.isRunning()) {
+            for (Point3D p : game.getStars()) {
+                if (p.getX() >= x-400 && p.getX() <= x+400 && p.getY() >= y-400 && p.getY() <= y+400) {
+                    Path2D star = createStar(p.getX() - x + 400, p.getY() - y + 400, 2, 5, 5, Math.toRadians(p.getZ()));
+                    g.fill(star);
+                }
+            }
+        }
+    }
+
+    private static Path2D createStar(double centerX, double centerY,
+                                    double innerRadius, double outerRadius, int numRays,
+                                    double startAngleRad)
+    {
+        Path2D path = new Path2D.Double();
+        double deltaAngleRad = Math.PI / numRays;
+        for (int i = 0; i < numRays * 2; i++)
+        {
+            double angleRad = startAngleRad + i * deltaAngleRad;
+            double ca = Math.cos(angleRad);
+            double sa = Math.sin(angleRad);
+            double relX = ca;
+            double relY = sa;
+            if ((i & 1) == 0)
+            {
+                relX *= outerRadius;
+                relY *= outerRadius;
+            }
+            else
+            {
+                relX *= innerRadius;
+                relY *= innerRadius;
+            }
+            if (i == 0)
+            {
+                path.moveTo(centerX + relX, centerY + relY);
+            }
+            else
+            {
+                path.lineTo(centerX + relX, centerY + relY);
+            }
+        }
+        path.closePath();
+        return path;
     }
 
     /**

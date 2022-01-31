@@ -1,11 +1,14 @@
 package rug.astro.model;
 
+import javafx.geometry.Point3D;
 import rug.astro.control.GameUpdater;
 import rug.astro.game_observer.ObservableGame;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Game extends ObservableGame {
 
@@ -23,6 +26,10 @@ public class Game extends ObservableGame {
      * The game updater thread, which is responsible for updating the game's state as time goes on.
      */
     protected transient Thread gameUpdaterThread;
+
+    public static final int SPACESIZE = 2000;
+
+    private Collection<Point3D> stars;
 
     /**
      * Constructs a new game, with a new spaceship and all other model data in its default starting state.
@@ -53,8 +60,19 @@ public class Game extends ObservableGame {
      * default starting state before beginning a new game.
      */
     public void initializeGameData() {
+        this.stars = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            int x = ThreadLocalRandom.current().nextInt(20, Game.SPACESIZE - 20);
+            int y = ThreadLocalRandom.current().nextInt(20, Game.SPACESIZE - 20);
+            int z = ThreadLocalRandom.current().nextInt(0, 90);
+            stars.add(new Point3D(x, y, z));
+        }
         this.ship.reset();
         this.running = false;
+    }
+
+    public Collection<Point3D> getStars() {
+        return stars;
     }
 
     /**
