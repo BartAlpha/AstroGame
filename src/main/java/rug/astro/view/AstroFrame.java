@@ -12,7 +12,7 @@ public class AstroFrame extends JFrame {
     /**
      * The title which appears in the upper border of the window.
      */
-    private static final String WINDOW_TITLE = "Asteroids";
+    private static final String WINDOW_TITLE = "Astro";
 
     /**
      * The size that the window should be.

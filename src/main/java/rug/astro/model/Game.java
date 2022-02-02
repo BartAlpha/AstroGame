@@ -1,13 +1,20 @@
 package rug.astro.model;
 
 import javafx.geometry.Point3D;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import rug.astro.control.GameUpdater;
 import rug.astro.game_observer.ObservableGame;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Point2D;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Game extends ObservableGame {
@@ -16,6 +23,8 @@ public class Game extends ObservableGame {
      * The spaceship object that the player is in control of.
      */
     private Spaceship ship;
+
+    private Planet currentPlanet;
 
     /**
      * Indicates whether or not the game is running. Setting this to false causes the game to exit its loop and quit.
@@ -31,6 +40,10 @@ public class Game extends ObservableGame {
 
     private Collection<Point3D> stars;
 
+    private Collection<Planet> planets;
+
+    private int discovered;
+
     /**
      * Constructs a new game, with a new spaceship and all other model data in its default starting state.
      */
@@ -39,12 +52,32 @@ public class Game extends ObservableGame {
         this.initializeGameData();
     }
 
+    public int getDiscovered() {
+        return discovered;
+    }
+
+    public void setDiscovered(int discovered) {
+        this.discovered = discovered;
+    }
+
     /**
      * Sets running
      * @param running
      */
     public void setRunning(boolean running) {
         this.running = running;
+    }
+
+    public Collection<Planet> getPlanets() {
+        return planets;
+    }
+
+    public Planet getCurrentPlanet() {
+        return currentPlanet;
+    }
+
+    public void setCurrentPlanet(Planet currentPlanet) {
+        this.currentPlanet = currentPlanet;
     }
 
     /**
@@ -60,15 +93,59 @@ public class Game extends ObservableGame {
      * default starting state before beginning a new game.
      */
     public void initializeGameData() {
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
         this.stars = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            int x = ThreadLocalRandom.current().nextInt(20, Game.SPACESIZE - 20);
-            int y = ThreadLocalRandom.current().nextInt(20, Game.SPACESIZE - 20);
-            int z = ThreadLocalRandom.current().nextInt(0, 90);
+        for (int i = 0; i < SPACESIZE/50; i++) {
+            int x = rng.nextInt(20, Game.SPACESIZE - 20);
+            int y = rng.nextInt(20, Game.SPACESIZE - 20);
+            int z = rng.nextInt(0, 90);
             stars.add(new Point3D(x, y, z));
         }
+        this.currentPlanet = null;
+        this.generatePlanets();
         this.ship.reset();
         this.running = false;
+        this.discovered = 0;
+    }
+
+    private void generatePlanets() {
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        this.planets = new ArrayList<>();
+        Image im = null;
+        JSONParser parser = new JSONParser();
+        JSONArray ja = null;
+        try {
+            ja = (JSONArray) parser.parse(new FileReader("generated.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        int i = 1;
+        Point2D.Double l = null;
+        for (Object o : ja) {
+            JSONObject info = (JSONObject) o;
+            boolean stacked = true;
+            while (stacked) {
+                l = new Point2D.Double(rng.nextDouble(70.0, SPACESIZE - 80), rng.nextDouble(100.0, SPACESIZE - 80));
+                stacked = false;
+                for (Planet planet : planets) {
+                    if (stackedPlanets(l, planet.getLocation())) {
+                        stacked = true;
+                        System.out.println("STACKED: "+ l.getX() + " " + l.getY() + " AND " + planet.getLocation().getX() + " " + planet.getLocation().getY());
+                        break;
+                    }
+                }
+            }
+            try {
+                im = ImageIO.read(getClass().getResource("/planets/planet" + i + ".png"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Planet p = (new Planet(l, new Point2D.Double(0.0,0.0), 60, (String) info.get("name"), im, (String) info.get("description")));
+            planets.add(p);
+            i++;
+        }
     }
 
     public Collection<Point3D> getStars() {
@@ -97,6 +174,13 @@ public class Game extends ObservableGame {
             return false;
         }
         return true;
+    }
+
+    public static boolean stackedPlanets(Point2D.Double p1, Point2D.Double p2) {
+        if (Math.abs(p1.getX()-p2.getX()) < 160 && Math.abs(p1.getY()-p2.getY()) < 160) {
+            return true;
+        }
+        return false;
     }
 
     /**

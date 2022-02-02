@@ -32,7 +32,7 @@ public class MainMenuPanel extends JPanel {
         Font f = new Font("big", Font.CENTER_BASELINE, 25);
         g.setColor(Color.WHITE);
         g.setFont(f);
-        g.drawString("Asteroids Main Menu", 78, 30);
+        g.drawString("Astro Main Menu", 100, 30);
         drawRect(g,100, 50, 200, 75, "Single Player");
     }
 

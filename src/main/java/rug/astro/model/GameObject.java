@@ -3,6 +3,7 @@ package rug.astro.model;
 import rug.astro.view.AstroFrame;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 
 public abstract class GameObject {
 
@@ -108,6 +109,18 @@ public abstract class GameObject {
         return this.location;
     }
 
+    public void setDestroyed(boolean destroyed) {
+        this.destroyed = destroyed;
+    }
+
+    public void setLocation(Point.Double location) {
+        this.location = location;
+    }
+
+    public void setVelocity(Point.Double velocity) {
+        this.velocity = velocity;
+    }
+
     /**
      * @return The current velocity of this object.
      */
@@ -146,7 +159,7 @@ public abstract class GameObject {
     /**
      * @return Whether or not this object is immune from collisions.
      */
-    private boolean canCollide() {
+    public boolean canCollide() {
         return this.stepsUntilCollisionPossible <= 0 && !isDestroyed();
     }
 

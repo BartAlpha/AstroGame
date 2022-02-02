@@ -15,7 +15,7 @@ public class MainMenuFrame extends JFrame {
     /**
      * The size that the window should be.
      */
-    public static final Dimension WINDOW_SIZE = new Dimension(416, 600);
+    public static final Dimension WINDOW_SIZE = new Dimension(416, 200);
 
     /**
      * Constructs the game's main menu.

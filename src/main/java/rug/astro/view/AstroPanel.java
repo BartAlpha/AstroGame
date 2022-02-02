@@ -3,14 +3,20 @@ package rug.astro.view;
 import javafx.geometry.Point3D;
 import rug.astro.game_observer.GameUpdateListener;
 import rug.astro.model.Game;
+import rug.astro.model.Planet;
 import rug.astro.view.view_models.SpaceshipViewModel;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AstroPanel extends JPanel implements GameUpdateListener {
+
+    private Image paper;
     /**
      * The game model that this panel will draw to the screen.
      */
@@ -31,6 +37,11 @@ public class AstroPanel extends JPanel implements GameUpdateListener {
     AstroPanel(Game game) {
         this.game = game;
         this.game.addListener(this);
+        try {
+            this.paper = ImageIO.read(getClass().getResource("/paper.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -64,9 +75,23 @@ public class AstroPanel extends JPanel implements GameUpdateListener {
         double y = game.getSpaceship().getLocation().y;
         this.drawBorderX(graphics2D);
         this.drawBorderY(graphics2D);
+        this.drawPlanets(graphics2D);
         this.drawMinimap(graphics2D);
-        //graphics2D.setColor(Color.WHITE);
-        //graphics.drawRect((int)x-100, (int)y-100, 200, 200);
+        this.drawInfo(graphics2D);
+    }
+
+    public void drawPlanets(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        double x = game.getSpaceship().getLocation().x;
+        double y = game.getSpaceship().getLocation().y;
+        if (game.isRunning()) {
+            for (Planet planet : game.getPlanets()) {
+                Point2D.Double p = planet.getLocation();
+                if (p.getX() >= x-460 && p.getX() <= x+460 && p.getY() >= y-460 && p.getY() <= y+460) {
+                    g.drawImage(planet.getImage(), (int) ((int)p.getX() - x + 375 - planet.getRadius()), (int) ((int) p.getY() - y + 375 - planet.getRadius()), (int) ((int) planet.getRadius()*2.9), (int) ((int) planet.getRadius()*2.9), null);
+                }
+            }
+        }
     }
 
     public void drawBorderX(Graphics2D g) {
@@ -140,8 +165,42 @@ public class AstroPanel extends JPanel implements GameUpdateListener {
         double y = game.getSpaceship().getLocation().y;
         double xmini = x/Game.SPACESIZE*100;
         double ymini = y/Game.SPACESIZE*100;
-        g.setColor(Color.GREEN);
+        g.setColor(Color.CYAN);
         g.fillRect((int)xmini+650,(int)ymini+50,2,2);
+        for (Planet p : game.getPlanets()) {
+            if (!p.isVisited()) {
+                g.setColor(Color.RED);
+            } else {
+                g.setColor(Color.GREEN);
+            }
+            xmini = p.getLocation().x/Game.SPACESIZE*100;
+            ymini = p.getLocation().y/Game.SPACESIZE*100;
+            g.fillRect((int)xmini+650,(int)ymini+50,2,2);
+        }
+        Font f = new Font("big", Font.CENTER_BASELINE, 10);
+        g.setColor(Color.WHITE);
+        g.setFont(f);
+        g.drawString("Visited planets: " + this.game.getDiscovered() + "/" + this.game.getPlanets().size(), 650, 30);
+    }
+
+    public void drawInfo(Graphics2D g) {
+        if (game.getCurrentPlanet() != null) {
+            g.drawImage(paper, 100, 100, 600, 550, null);
+            String info = "Press x to Leave the planet";
+            String end = "You have discovered all planets";
+            Font f = new Font("big", Font.CENTER_BASELINE, 25);
+            g.setColor(Color.WHITE);
+            g.setFont(f);
+            FontMetrics fm = g.getFontMetrics();
+            if (this.game.getDiscovered() == this.game.getPlanets().size()) {
+                g.drawString(end , AstroFrame.WINDOW_SIZE.width/2 - fm.stringWidth(end)/2, 80);
+            }
+
+            g.drawString(info, AstroFrame.WINDOW_SIZE.width/2 - fm.stringWidth(info)/2, 50);
+            g.setColor(Color.BLACK);
+            g.drawString(game.getCurrentPlanet().getName(), AstroFrame.WINDOW_SIZE.width/2 - fm.stringWidth(game.getCurrentPlanet().getName())/2, 150);
+            drawStringMultiLine(g, game.getCurrentPlanet().getDescription(), 450, 160, 190);
+        }
     }
 
 
@@ -203,6 +262,28 @@ public class AstroPanel extends JPanel implements GameUpdateListener {
     public void drawDead(Graphics2D g) {
         if (game.isRunning() && game.getSpaceship().isDestroyed()) {
             g.drawString("Your spaceship is destroyed", 300, 30);
+        }
+    }
+
+    public static void drawStringMultiLine(Graphics2D g, String text, int lineWidth, int x, int y) {
+        FontMetrics m = g.getFontMetrics();
+        if(m.stringWidth(text) < lineWidth) {
+            g.drawString(text, x, y);
+        } else {
+            String[] words = text.split(" ");
+            String currentLine = words[0];
+            for(int i = 1; i < words.length; i++) {
+                if(m.stringWidth(currentLine+words[i]) < lineWidth) {
+                    currentLine += " "+words[i];
+                } else {
+                    g.drawString(currentLine, x, y);
+                    y += m.getHeight();
+                    currentLine = words[i];
+                }
+            }
+            if(currentLine.trim().length() > 0) {
+                g.drawString(currentLine, x, y);
+            }
         }
     }
 

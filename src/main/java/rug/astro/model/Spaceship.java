@@ -8,7 +8,7 @@ public class Spaceship extends GameObject {
     /**
      * The maximum speed that the spaceship is allowed to reach before extra acceleration will not do anything.
      */
-    public static final double MAXIMUM_SPEED = 20.0;
+    public static final double MAXIMUM_SPEED = 10.0;
 
     /**
      * The coefficient to multiply the ship's velocity by every tick, so that it slows down.
@@ -42,6 +42,8 @@ public class Spaceship extends GameObject {
     /** Indicates whether the turn left button is pressed. */
     private boolean turnLeftKeyPressed;
 
+    private boolean departureKeyPressed;
+
     /**
      * Color of the ship.
      */
@@ -52,7 +54,7 @@ public class Spaceship extends GameObject {
      * with no velocity.
      */
     Spaceship() {
-        super(AstroFrame.WINDOW_SIZE.width / 2,AstroFrame.WINDOW_SIZE.height / 2, 0, 0, 15);
+        super(Game.SPACESIZE / 2.0, Game.SPACESIZE / 2.0, 0, 0, 15);
         color = DEFAULT_COLOR;
         this.reset();
     }
@@ -84,9 +86,17 @@ public class Spaceship extends GameObject {
         this.accelerateKeyPressed = false;
         this.turnLeftKeyPressed = false;
         this.turnRightKeyPressed = false;
+        this.departureKeyPressed = false;
         this.destroyed = false;
     }
 
+    public boolean isDepartureKeyPressed() {
+        return departureKeyPressed;
+    }
+
+    public void setDepartureKeyPressed(boolean b) {
+        this.departureKeyPressed = b;
+    }
 
     /**
      *	Sets the left field to the specified value.

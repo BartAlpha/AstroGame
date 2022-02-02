@@ -6,6 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class PlayerKeyListener implements KeyListener {
+
+    private static final int DEPARTURE_KEY = KeyEvent.VK_X;
     /**
      * The key that, when pressed, causes the ship to accelerate.
      */
@@ -56,6 +58,9 @@ public class PlayerKeyListener implements KeyListener {
             case RIGHT_KEY:
                 this.ship.setTurnRightKeyPressed(true);
                 break;
+            case DEPARTURE_KEY:
+                this.ship.setDepartureKeyPressed(true);
+                break;
         }
     }
 
@@ -75,6 +80,9 @@ public class PlayerKeyListener implements KeyListener {
                 break;
             case RIGHT_KEY:
                 this.ship.setTurnRightKeyPressed(false);
+                break;
+            case DEPARTURE_KEY:
+                this.ship.setDepartureKeyPressed(false);
                 break;
         }
     }

@@ -3,6 +3,7 @@ package rug.astro.control;
 import rug.astro.model.*;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -106,8 +107,20 @@ public class GameUpdater implements Runnable {
     {
         Spaceship ship = this.game.getSpaceship();
         ship.nextStep();
+        this.checkDeparture();
+        game.getPlanets().forEach(GameObject::nextStep);
         this.checkCollisions();
         this.updateCounter++;
+    }
+
+    private void checkDeparture() {
+        if (this.game.getCurrentPlanet() != null) {
+            Spaceship s = this.game.getSpaceship();
+            if (s.isDepartureKeyPressed()) {
+                this.game.getSpaceship().setLocation(new Point2D.Double(s.getLocation().x, s.getLocation().y - 80));
+                this.game.setCurrentPlanet(null);
+            }
+        }
     }
 
     /**
@@ -115,6 +128,17 @@ public class GameUpdater implements Runnable {
      * objects of a different type, but not with objects of the same type. I.e. bullets cannot collide with bullets etc.
      */
     private void checkCollisions() {
+        this.game.getPlanets().forEach(planet -> {
+            if (this.game.getSpaceship().collides(planet)) {
+                this.game.getSpaceship().setLocation(new Point2D.Double(planet.getLocation().x, planet.getLocation().y));
+                this.game.getSpaceship().setVelocity(new Point2D.Double(planet.getVelocity().x, planet.getVelocity().y));
+                this.game.setCurrentPlanet(planet);
+                if (!planet.isVisited()) {
+                    planet.setVisited(true);
+                    this.game.setDiscovered(this.game.getDiscovered()+1);
+                }
+            }
+        });
     }
 
 
